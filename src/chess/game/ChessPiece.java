@@ -25,7 +25,7 @@ public class ChessPiece {
 		this.color = ChessUtils.COLORLESS;
 		gridPosX = x;
 		gridPosY = y;
-
+//		createMemento();
 	}
 
 	// Création d'une pièce normale. La position algébrique en notation d'échecs
@@ -163,5 +163,19 @@ public class ChessPiece {
 		return false;
 
 	}
+	
+	// Creation des methodes memento.
+	public PieceMemento createMemento() {
+		return new PieceMemento(this);
+	}
+	
+	public void restoreMemento(PieceMemento m) {
+        gridPosX = m.gridPosX;
+        gridPosY = m.gridPosY;
+        type = m.type;
+        color = m.color;
+    }
+	
+	
 
 }

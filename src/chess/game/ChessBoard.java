@@ -5,19 +5,21 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Scanner;
+import java.util.Stack;
 
 import chess.ui.BoardView;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import chess.game.ChessPiece;
 
 public class ChessBoard {
 
-	// Grille de jeu 8x8 cases. Contient des références aux pièces présentes sur
+	// Grille de jeu 8x8 cases. Contient des rï¿½fï¿½rences aux piï¿½ces prï¿½sentes sur
 	// la grille.
-	// Lorsqu'une case est vide, elle contient une pièce spéciale
+	// Lorsqu'une case est vide, elle contient une piï¿½ce spï¿½ciale
 	// (type=ChessPiece.NONE, color=ChessPiece.COLORLESS).
 	private ChessPiece[][] grid;
+	
+	private Stack<ChessMove> oldMoves = new Stack<ChessMove>();
 
 	private BoardView view;
 
@@ -25,22 +27,23 @@ public class ChessBoard {
 
 		view = new BoardView(x, y);
 
-		// Initialise la grille avec des pièces vides.
+		// Initialise la grille avec des piï¿½ces vides.
 		grid = new ChessPiece[8][8];
 		for (int i = 0; i < grid.length; i++) {
 			for (int j = 0; j < grid[i].length; j++) {
 				grid[i][j] = new ChessPiece(i, j, this);
 			}
 		}
+//		createMemento();
 
 	}
 
-	// Place une pièce vide dans la case
+	// Place une piï¿½ce vide dans la case
 	public void clearSquare(int x, int y) {
 		grid[x][y] = new ChessPiece(x, y, this);
 	}
 
-	// Place une pièce sur le planche de jeu.
+	// Place une piï¿½ce sur le planche de jeu.
 	public void putPiece(ChessPiece piece) {
 
 		Point2D pos = view.gridToPane(piece.getGridX(), piece.getGridY());
@@ -50,23 +53,23 @@ public class ChessBoard {
 		grid[piece.getGridX()][piece.getGridY()] = piece;
 	}
 
-	// Vérifie si la case contient une pièce vide
+	// Vï¿½rifie si la case contient une piï¿½ce vide
 	public boolean isEmpty(Point pos) {
 		return (grid[pos.x][pos.y].getType() == ChessUtils.TYPE_NONE);
 	}
 
-	// Vérifie si une coordonnée est valide sur la planche de jeu
+	// Vï¿½rifie si une coordonnï¿½e est valide sur la planche de jeu
 	public boolean isValid(Point pos) {
 		return (pos.x >= 0 && pos.x <= 7 && pos.y >= 0 && pos.y <= 7);
 	}
 
-	// Vérifie si deux pièces sont de la même couleur
+	// Vï¿½rifie si deux piï¿½ces sont de la mï¿½me couleur
 	public boolean isSameColor(Point pos1, Point pos2) {
 		return grid[pos1.x][pos1.y].getColor() == grid[pos2.x][pos2.y].getColor();
 	}
 
-	// Déplace une pièce. Appelé par l'interface graphique lorsqu'un déplacement est
-	// détecté.
+	// Dï¿½place une piï¿½ce. Appelï¿½ par l'interface graphique lorsqu'un dï¿½placement est
+	// dï¿½tectï¿½.
 	public boolean move(Point2D pixelPos, Point2D newPixelPos) {
 
 		Point gridPos = view.paneToGrid(pixelPos);
@@ -80,7 +83,7 @@ public class ChessBoard {
 		return result;
 	}
 
-	// Déplace une pièce sur la grille. Vérifie les règles de déplacement.
+	// Dï¿½place une piï¿½ce sur la grille. Vï¿½rifie les rï¿½gles de dï¿½placement.
 	public boolean move(Point startPos, Point endPos) {
 
 		ChessPiece toMove = getPiece(startPos);
@@ -112,17 +115,17 @@ public class ChessBoard {
 		return true;
 	}
 
-	// Lecture et exécution d'une suite de mouvements
+	// Lecture et exï¿½cution d'une suite de mouvements
 	public void loadMovesFromFile(File file) throws Exception {
-		// Non implanté!!
+		// Non implantï¿½!!
 	}
 
-	// Lecture d'un ChessBoard à partir d'un fichier. Utilisé par les tests.
+	// Lecture d'un ChessBoard ï¿½ partir d'un fichier. Utilisï¿½ par les tests.
 	public static ChessBoard readFromFile(String fileName) throws Exception {
 		return readFromFile(new File(fileName), 0, 0);
 	}
 	
-	// Lecture d'un ChessBoard à partir d'un fichier
+	// Lecture d'un ChessBoard ï¿½ partir d'un fichier
 	public static ChessBoard readFromFile(File file, int x, int y) throws Exception {
 
 		ChessBoard board = new ChessBoard(x, y);
@@ -155,7 +158,7 @@ public class ChessBoard {
 				}
 			}
 		}
-		//Séparateur. Nécessaire pour la lecture de scripts.
+		//Sï¿½parateur. Nï¿½cessaire pour la lecture de scripts.
 		writer.write("</BOARD>\n");
 		writer.close();
 	}
@@ -203,5 +206,30 @@ public class ChessBoard {
 
 		return view.getPane();
 	}
+	
+	
+	// Creation des methodes memento.
+	public BoardMemento createMemento() {
+		return new BoardMemento(this);
+	}
+	
+	public void restoreMemento(BoardMemento boardMem) {
+		// Vide l'ancien tableau et le restore
+		for (ChessPiece[] pieces : grid) {
+            for (ChessPiece piece : pieces) {
+                if (piece != null)
+                    removePiece(new Point(piece.getGridX(), piece.getGridY()));
+            }
+        }
+		
+		for (int i=0; i<grid.length; i++) {
+            for (int j=0; j<grid[i].length; j++) {
+            	Point p=new Point(i,j);
+				grid[i][j]= getPiece(p);                
+            }
+		}
+	}       
 
+	
+	
 }
