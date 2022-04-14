@@ -17,16 +17,24 @@ public class ChessBoard {
 	// la grille.
 	// Lorsqu'une case est vide, elle contient une pi�ce sp�ciale
 	// (type=ChessPiece.NONE, color=ChessPiece.COLORLESS).
-	private ChessPiece[][] grid;
-	
-	private Stack<ChessMove> oldMoves = new Stack<ChessMove>();
-
+	private ChessPiece[][] grid;	
 	private BoardView view;
+	private BoardMemento initialState;
+	private Stack<ChessMove> oldMoves; // Pile des anciens mouvements.
+	private Stack<ChessMove> recentMoves; // Pile des mouvements recents.
+	
+	
 
 	public ChessBoard(int x, int y) {
-
+		//view = new BoardView(x, y);
+		initBoard();
+		initialState = createMemento();
 		view = new BoardView(x, y);
-
+		oldMoves = new Stack<ChessMove>();
+	}
+	
+	
+	public void initBoard() {
 		// Initialise la grille avec des pi�ces vides.
 		grid = new ChessPiece[8][8];
 		for (int i = 0; i < grid.length; i++) {
@@ -34,8 +42,6 @@ public class ChessBoard {
 				grid[i][j] = new ChessPiece(i, j, this);
 			}
 		}
-//		createMemento();
-
 	}
 
 	// Place une pi�ce vide dans la case
@@ -73,10 +79,15 @@ public class ChessBoard {
 	public boolean move(Point2D pixelPos, Point2D newPixelPos) {
 
 		Point gridPos = view.paneToGrid(pixelPos);
+		// Position finale.
+		Point endGridPos = view.paneToGrid(newPixelPos);
+		
+		// Creation du ChessMove.
+		ChessMove cMove = new ChessMove(gridPos, endGridPos);
 
 		ChessPiece toMove = grid[gridPos.x][gridPos.y];
 
-		boolean result = move(view.paneToGrid(pixelPos), view.paneToGrid(newPixelPos));
+		boolean result = move(cMove);
 
 		toMove.moveUI(view.gridToPane(toMove.getGridPos()));
 
@@ -84,40 +95,47 @@ public class ChessBoard {
 	}
 
 	// D�place une pi�ce sur la grille. V�rifie les r�gles de d�placement.
-	public boolean move(Point startPos, Point endPos) {
+	public boolean move(ChessMove move) {
 
-		ChessPiece toMove = getPiece(startPos);
+		ChessPiece toMove = getPiece(move.getInitPos());
 
 		if (toMove.isNone()) {
 			return false;
 		}
 
-		if (!isValid(endPos)) {
+		if (!isValid(move.getEndPos())) {
 			return false;
 		}
 
-		if (isSameColor(startPos, endPos)) {
+		if (isSameColor(move.getInitPos(), move.getEndPos())) {
 			return false;
 		}
 
-		if (!toMove.verifyMove(startPos, endPos)) {
+		if (!toMove.verifyMove(move.getInitPos(), move.getEndPos())) {
 			return false;
 		}
 
-		if (!isEmpty(endPos)) {
+		if (!isEmpty(move.getEndPos())) {
 
 			// Capture!
-			removePiece(endPos);
+			removePiece(move.getEndPos());
 		}
-		assignSquare(endPos, toMove);
-		clearSquare(startPos);
+		assignSquare(move.getEndPos(), toMove);
+		clearSquare(move.getInitPos());
 
+		oldMoves.add(move); // Sauvegarde de l'objet dans la pile des movements.
 		return true;
 	}
 
-	// Lecture et ex�cution d'une suite de mouvements
+	// Lecture et ex�cution d'une suite de mouvements 
 	public void loadMovesFromFile(File file) throws Exception {
 		// Non implant�!!
+		Scanner readFile = new Scanner(new FileReader(file));
+		while (readFile.hasNext()) {
+			// Pas clair pour loadMoves rip question 5.d ... nouveau constructeur?
+			break;
+		}
+		
 	}
 
 	// Lecture d'un ChessBoard � partir d'un fichier. Utilis� par les tests.
@@ -155,6 +173,7 @@ public class ChessBoard {
 				ChessPiece toWrite = grid[i][j];
 				if (!toWrite.isNone()) {
 					toWrite.saveToStream(writer);
+					initialState.saveToFile(writer);
 				}
 			}
 		}
@@ -207,13 +226,17 @@ public class ChessBoard {
 		return view.getPane();
 	}
 	
+	public ChessPiece[][] getGrid() {
+		return grid;
+	}
+	
 	
 	// Creation des methodes memento.
 	public BoardMemento createMemento() {
 		return new BoardMemento(this);
 	}
 	
-	public void restoreMemento(BoardMemento boardMem) {
+	public ChessBoard restoreMemento(BoardMemento boardMem) {
 		// Vide l'ancien tableau et le restore
 		for (ChessPiece[] pieces : grid) {
             for (ChessPiece piece : pieces) {
@@ -221,14 +244,40 @@ public class ChessBoard {
                     removePiece(new Point(piece.getGridX(), piece.getGridY()));
             }
         }
-		
+		// Restore le tableau
 		for (int i=0; i<grid.length; i++) {
             for (int j=0; j<grid[i].length; j++) {
-            	Point p=new Point(i,j);
-				grid[i][j]= getPiece(p);                
+            	Point p = new Point(i,j);
+				grid[i][j] = boardMem.getPieces(p);     
             }
 		}
-	}       
+		return (this);
+	}
+
+
+	public static void redoMove(File file) {
+		// TODO Auto-generated method stub
+		// Un peu comme le labo 7 (double stack)
+		//
+		// if(recentMoves.size() > 0) {			
+		//  	ChessMoves temp = recentMoves.pop();			
+		//  	temp.redoMove();		
+		//  	oldMoves.push(temp);
+		// }
+		
+	}
+
+	public static void undoMove(File file) {
+		// TODO Auto-generated method stub
+		// Un peu comme le labo 7 (double stack)
+		//
+		// if(oldMoves.size() > 0) {
+		// 		ChessMoves temp = oldMoves.pop();
+		// 		temp.undoMove();
+		// 		recentMoves.push(temp);
+		// }
+	}	
+	
 
 	
 	

@@ -18,6 +18,7 @@ public class ChessPiece {
 	private int color;
 
 	private PieceView view;
+	private PieceMemento initPiece;
 
 	// Pour créer des pièces à mettre sur les cases vides
 	public ChessPiece(int x, int y, ChessBoard b) {
@@ -25,7 +26,7 @@ public class ChessPiece {
 		this.color = ChessUtils.COLORLESS;
 		gridPosX = x;
 		gridPosY = y;
-//		createMemento();
+		createMemento(); // De meme?
 	}
 
 	// Création d'une pièce normale. La position algébrique en notation d'échecs
@@ -39,6 +40,7 @@ public class ChessPiece {
 		setAlgebraicPos(pos);
 
 	}
+	
 
 	public static ChessPiece readFromStream(Scanner reader, ChessBoard b) {
 		// LaboX: vider
@@ -169,11 +171,12 @@ public class ChessPiece {
 		return new PieceMemento(this);
 	}
 	
-	public void restoreMemento(PieceMemento m) {
+	public ChessPiece restoreMemento(PieceMemento m) {
         gridPosX = m.gridPosX;
         gridPosY = m.gridPosY;
         type = m.type;
         color = m.color;
+        return (this);
     }
 	
 	

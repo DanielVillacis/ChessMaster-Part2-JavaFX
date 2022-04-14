@@ -22,13 +22,13 @@ public class ChessGame {
 	}
 	
 	
-	public void movePiece(String move){
+	public void movePiece(String move){ // Deplacement des notation algeriques a ChessMove.
 		if(move.length()!=5){
 			throw new IllegalArgumentException("Badly formed move");
 		}
-		String start = move.substring(0,2);
-		String end = move.substring(3,5);
-		board.move(ChessUtils.convertAlgebraicPosition(start),ChessUtils.convertAlgebraicPosition(end));
+		ChessMove newMove = new ChessMove(move);
+			
+		board.move(newMove);
 	}
 	
 

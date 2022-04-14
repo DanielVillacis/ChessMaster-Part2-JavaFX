@@ -2,6 +2,7 @@ package chess.ui;
 
 import java.io.File;
 
+import chess.game.ChessBoard;
 import chess.game.ChessGame;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -54,7 +55,7 @@ public class GameView extends Application {
 		gamePane.getChildren().add(resetButton);
 
 		resetButton.setOnAction(event -> resetGame());
-
+		// Question 5.d
 		Button recordButton = new Button("Record moves");
 		recordButton.setLayoutX(325);
 		recordButton.setLayoutY(50);
@@ -62,7 +63,7 @@ public class GameView extends Application {
 		recordButton.setOnAction(event -> {
 
 			File file = getSaveFile("Record moves...","scripts/saves", stage);
-			saveScript(file);
+			saveScript(file); // A implanter
 		});
 
 		Button saveButton = new Button("Save board");
@@ -93,7 +94,7 @@ public class GameView extends Application {
 			
 			resetGame(file);
 		});
-
+		// Question 5.d
 		Button playButton = new Button("Play moves");
 		playButton.setLayoutX(725);
 		playButton.setLayoutY(50);
@@ -103,16 +104,29 @@ public class GameView extends Application {
 			File file = getOpenFile("Open Script...","scripts", stage);
 			loadScript(file);
 		});
-
+		
+		
+		// Button Undo. (Question 6)
 		Button undoButton = new Button("Undo");
 		undoButton.setLayoutX(825);
 		undoButton.setLayoutY(50);
 		gamePane.getChildren().add(undoButton);
+		playButton.setOnAction(event -> {
+			File file = getOpenFile("Open Script...","scripts", stage);
+			ChessBoard.undoMove(file); // Comment relier le UI a des moves si le parametre est un file? No sense
+		});
+		
+		// Button Redo. (Question 6)
 		Button redoButton = new Button("Redo");
 		redoButton.setLayoutX(900);
 		redoButton.setLayoutY(50);
 		gamePane.getChildren().add(redoButton);
-
+		playButton.setOnAction(event -> {
+			File file = getOpenFile("Open Script...","scripts", stage);
+			ChessBoard.redoMove(file); // Comment relier le UI a des moves si le parametre est un file? No sense
+		});
+		
+		
 		CheckBox editBox = new CheckBox("Edit board");
 		editBox.setLayoutX(200);
 		editBox.setLayoutY(950);
@@ -191,7 +205,16 @@ public class GameView extends Application {
 	public void saveScript(String fileName){
 		saveScript(new File(fileName));
 	}
+	// A implanter
 	private void saveScript(File file){
+		try {
+			game.getBoard().saveToFile(file);
+		} 
+		catch(Exception e) {
+			Alert alert = new Alert(AlertType.ERROR, "Error writing file", ButtonType.OK);
+			alert.showAndWait();
+			return;
+		}
 		
 	}
 	
@@ -199,13 +222,18 @@ public class GameView extends Application {
 
 	// LaboX : Exercice 5
 	public void loadScript(String fileName) {
-
 		loadScript(new File(fileName));
 	}
-
+	// A implanter
 	private void loadScript(File file) {
-
-		// Incomplet!
+		try {
+			game.loadBoardFromFile(file);		
+		} 
+		catch(Exception e) {
+			Alert alert = new Alert(AlertType.ERROR, "Error writing file", ButtonType.OK);
+			alert.showAndWait();
+			return;
+		}
 
 	}
 

@@ -5,13 +5,14 @@ import java.util.Scanner;
 
 public class PieceMemento {
 	
-	// Conserve le type de piece, la couleur et la position.
+	// Conserve le type de piece, la couleur et la position. (Creer des accesseurs pour les garder privees?)
 	public int gridPosX;
 	public int gridPosY;
 
 	public int type;
 	public int color;
 	
+	// Constructeur.
 	public PieceMemento(ChessPiece piece) {
 		gridPosX = piece.getGridX();
 		gridPosY = piece.getGridY();
@@ -34,6 +35,7 @@ public class PieceMemento {
 
 	}
 
+	
 	public void saveToStream(Writer writer) throws Exception {
 
 		writer.append(ChessUtils.makeAlgebraicPosition(gridPosX, gridPosY));
@@ -41,6 +43,7 @@ public class PieceMemento {
 		writer.append(ChessUtils.makePieceName(color, type));
 		writer.append('\n');
 	}
+	
 	
 	public boolean isNone() {
 		return type == ChessUtils.TYPE_NONE;
